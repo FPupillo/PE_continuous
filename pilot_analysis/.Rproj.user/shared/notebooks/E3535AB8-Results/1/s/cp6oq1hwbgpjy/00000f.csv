@@ -1,0 +1,5 @@
+"0","if(Sys.info()[""sysname""]==""Linux""){"
+"0","  abs<-""/home/francesco/PowerFolders/PE_continuous_rolling/pilot_data/"""
+"0","} else{"
+"0","  abs<-""/Users/francescopupillo/PowerFolders/PE_continuous_rolling/pilot_data/"""
+"0","}"

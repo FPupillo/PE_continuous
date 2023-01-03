@@ -1,0 +1,13 @@
+"0","ggplot(data_old, aes(x = location_error, fill = type ))+
+  geom_bar(aes(type, location_error, fill = type),
+           position=""dodge"",stat=""summary"", fun.y=""mean"", SE=T)+
+  geom_errorbar(aes(y = location_error,x = type, ymin = location_error - se, 
+                    ymax = location_error + se),
+                color = ""black"", width = 0.10, data=dat_summary)+
+  theme_classic()
+"
+"2","Warning:"
+"2"," Ignoring unknown parameters: fun.y, SE
+"
+"2","No summary function supplied, defaulting to `mean_se()`
+"

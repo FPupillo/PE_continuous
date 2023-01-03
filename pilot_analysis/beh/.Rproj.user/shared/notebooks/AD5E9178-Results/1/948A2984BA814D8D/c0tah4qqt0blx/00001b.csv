@@ -1,0 +1,27 @@
+"0",""
+"0","# prediction error at encoding and probability of remembering"
+"0","#data_old$PE<-as.numeric(data_old$PE)"
+"0",""
+"0","# prediction error at encoding and probability of remembering"
+"0","ggplot(data_all_encoding %>%"
+"0","         group_by(participant, type)%>%"
+"0","         summarise(fixation_error=mean(fixation_error, na.rm=T)), aes(x = type, y = fixation_error, fill = type ))+"
+"0","  geom_bar(aes(type, fixation_error, fill = type),"
+"0","           position=""dodge"",stat=""summary"", fun.y=""mean"", SE=T)+"
+"0","      stat_summary(fun.data = ""mean_cl_boot"", size = 0.8, geom=""errorbar"", width=0.2 )+"
+"0","  theme(axis.text.x = element_blank())+ # we are showing the different levels through the colors, so we can avoid naming the bars"
+"0","  #geom_errorbar(aes(y = location_err_rad,x = type, ymin = location_err_rad - se, "
+"0","                   # ymax = location_err_rad + se),"
+"0","               # color = ""black"", width = 0.10, data=dat_summary)+"
+"0","   geom_line( aes(type, fixation_error,group = participant), size=1, alpha=0.2, stat=""summary"")+"
+"0","  theme_classic()"
+"1","[38;5;250m`summarise()` has grouped output by 'participant'. You can override using the `.groups`
+argument.[39m
+"
+"2","Warning:"
+"2"," Ignoring unknown parameters: fun.y, SE
+"
+"2","No summary function supplied, defaulting to `mean_se()`
+"
+"2","No summary function supplied, defaulting to `mean_se()`
+"

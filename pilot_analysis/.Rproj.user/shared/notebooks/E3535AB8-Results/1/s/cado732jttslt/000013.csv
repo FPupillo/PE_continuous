@@ -1,0 +1,33 @@
+"0","# location error
+ggplot(data_old, aes(PE, location_error))+
+  geom_line(stat=""smooth"",method=""lm"",  formula=y~x,method.args=list(family=""binomial""), alpha=0.5)+
+
+  aes(colour = factor(participant),   alpha=0.3)+
+  geom_smooth(method=""lm"",formula=y~x,method.args=list(family=""binomial""), colour=""black"", se=T)+
+  #facet_grid(.~accuracy)+
+  theme(strip.text.x = element_text(size = 13))+
+  theme_classic()+
+      theme(legend.position = ""none"")+
+  xlab(""PE (in degrees)"")
+"
+"2","Warning:"
+"2"," Removed 30 rows containing non-finite values (stat_smooth).
+"
+"2","Warning:"
+"2"," In lm.wfit(x, y, w, offset = offset, singular.ok = singular.ok, 
+    ...) :
+ extra argument ‘family’ will be disregarded
+"
+"2","Warning:"
+"2"," In lm.wfit(x, y, w, offset = offset, singular.ok = singular.ok, 
+    ...) :
+ extra argument ‘family’ will be disregarded
+"
+"2","Warning:"
+"2"," Removed 30 rows containing non-finite values (stat_smooth).
+"
+"2","Warning:"
+"2"," In lm.wfit(x, y, w, offset = offset, singular.ok = singular.ok, 
+    ...) :
+ extra argument ‘family’ will be disregarded
+"

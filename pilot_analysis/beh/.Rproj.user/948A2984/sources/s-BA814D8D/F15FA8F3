@@ -1,0 +1,27 @@
+{
+    "id": "F15FA8F3",
+    "path": "~/PowerFolders/PE_continuous_rolling/pilot_analysis/beh/Results.Rmd",
+    "project_path": "Results.Rmd",
+    "type": "r_markdown",
+    "hash": "0",
+    "contents": "",
+    "dirty": true,
+    "created": 1671803331694.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "last_setup_crc32": "BA814D8Dc3ca673b",
+        "cursorPosition": "38,11",
+        "scrollLine": "21"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1671793668,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1671805059275,
+    "read_only": false,
+    "read_only_alternatives": []
+}

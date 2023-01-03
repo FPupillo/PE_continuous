@@ -1,6 +1,11 @@
-In this repository you can find all you need to go through the study and 
-analyze the data
+In this repository you can find all you need to go through the study and analyze the data. 
+To reproduce the analysis, the following softwares are needed:
+- R and Rstudio
+- Matlab
 
+Additional tools can be found at the [eyelink support pages](https://www.sr-research.com/support/thread-7769.html), where they can be downlaoded after registration. 
+
+To analyze eyetracking data, it is worth to 
 ## Background and hypotheses
 This paradigm aims at exploring the relationship between prediction error and memory formation. Participants watch a truck that delivers some goods across the city. On every trial, the truck appears on a different locations, and in the end the delivered item appears. The third truck and the image both appear most of the time at roughly the same place, so that participants will learn over time to predict where the item will be delivered. However, some time the third position will differ to some extent, creating prediction errors of varying degrees: low, high, and medium prediction error. Thus, we manipulate the distance of the actual position of the target object from the most likely position.
 
@@ -44,3 +49,11 @@ Try out the task at the following links.
 - Recognition task
 
 [https://pavlovia.org/lisco/precont_recognition](https://pavlovia.org/lisco/precont_recognition)
+
+### pilot data
+Pilot data subdivided in behavioural (beh) and eyetracking (et)
+
+### pilot analysis 
+Analysis of the pilot data:
+- beh: Behvioural
+- et: Eyetracking

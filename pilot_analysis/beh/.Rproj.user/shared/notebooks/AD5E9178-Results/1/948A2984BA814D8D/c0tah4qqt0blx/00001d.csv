@@ -1,0 +1,12 @@
+"0","  # plot"
+"0","  data_fixation<-data_encoding_et %>%"
+"0","    group_by(type, block) %>%"
+"0","    summarise(fixation_diff = mean(fixation_error, na.rm = T),"
+"0","              fixations = mean(fixations, na.rm=T),"
+"0","              fixations_sd = sd(fixations, na.rm=T), "
+"0","              pos_1 = mean(pos_1),"
+"0","              pos_2, mean(pos_2),"
+"0","              degrees = mean(degrees))"
+"1","[38;5;250m`summarise()` has grouped output by 'type', 'block'. You can override using the
+`.groups` argument.[39m
+"

@@ -1,0 +1,147 @@
+#------------------------------------------------------------------------------#
+# Script that creates the trials and print a csv file with
+# created by Francesco Pupillo on [1] "Mon Aug 29 18:12:09 2022"
+#------------------------------------------------------------------------------#
+library(CircStats)
+library(ggplot2)
+source("ranCirc.R")
+#------------------------------------------------------------------------------#
+# pparameters
+# chose center of one distribution 
+# generate random numbers between 0 and 2 pi radians
+x<-seq(1, 360, length.out = 120)
+
+set.seed(135356)
+
+# for each participant, the center is randomly chosen
+center1<-sample(x,1)
+
+# the other starting positions should be at least 90deg from that
+center_rest1<-ifelse(center1<=270, center1+90, center1-270)
+
+center_rest2<-ifelse(center_rest1<=270, center_rest1+90, center_rest1-270)
+
+center_rest3<-ifelse(center_rest2<=270, center_rest2+90, center_rest2-270)
+
+
+# sample again for the other map (it should be on a different )
+center2<-sample(x,1)
+
+# number of trials in total
+tot<-160
+
+# contingencies?
+# one for the more certain
+cont1<-c(0.80, 0.1, 0.1)
+
+# one for the less sertain
+cont2<-c(0.60, 0.2, 0.2)
+
+# concentration parameter of the von mises distribution
+concentration<-10
+
+#------------------------------------------------------------------------------#
+Alldata<-vector()
+
+
+for (n in 1:2){
+  
+
+  center<-get(paste0("center", n))
+  
+  # first position of the truck (90deg to the ending point)
+  pos_1<-ifelse(center<=270, center+90, center-270)
+  
+  # create the coordinates as well
+
+  # second position of the truck (90 deg )
+  pos_2<-ifelse(center>=90, center-90, center+270)
+  
+  contingencies<-get(paste0("cont", n))
+  
+  # get the number of trials by contingencies
+  lowPn<-(tot/2*contingencies[1])
+  
+  medPn<-(tot/2*contingencies[2])
+  
+  highPn<-tot/2*contingencies[3]
+
+  # low PE
+  raduniflow<-ranCirc(lowPn, type = "vm", center = center, 
+                      concentration = concentration)
+  
+  # now high
+  centerH<-ifelse(center<=180, center+180, center-180)
+  
+  radunhigh<-ranCirc(highPn, type = "vm", center = centerH,
+                     concentration = concentration)
+  
+  # now the medium
+  med1<-ifelse(center<=270, center+90, center-270)
+  med2<-ifelse(center>=90, center-90, center+270)
+  
+  radunmed1<-ranCirc(medPn/2, type = "vm", center = med1,
+                     concentration = concentration)
+  radunmed2<-ranCirc(medPn/2, type = "vm", center = med2, 
+                     concentration = concentration)
+  
+  # create a dataset 
+  radunAll<-data.frame(radians= c(raduniflow,radunhigh,radunmed1, radunmed2  )) #
+  
+  radunAll$pos_1<-pos_1
+  
+  radunAll$pos_2<-pos_2
+  
+  radunAll$type <- c(rep("low", times = lowPn), rep( "high", times = highPn),
+                     rep("medium", times = medPn))
+  
+  # degrees
+  radunAll$degrees <- radunAll$radians*180/3.14
+  
+  # uncertainty
+  certainty<-ifelse(n == 1, "low_uncertainty", "high_uncertainty")
+  
+  # map
+  radunAll$map<-paste0("map_", n, ".jpg")
+  
+  # plot
+  ggplot(radunAll, aes(x = degrees, fill = type))+
+    geom_histogram(binwidth = 5) +
+    coord_polar() +
+    coord_polar(start = -90 * pi / 180, direction = -1)+
+    
+    scale_x_continuous(limits = c(0,360),
+                       breaks = seq(0, 360, by = 45),
+                       minor_breaks = seq(0, 360, by = 15)) +
+    theme_classic()
+  #scale_fill_brewer()
+  
+  # save
+  ggsave(paste0("plot_", certainty, "polar_distr.jpeg"))
+  
+  # now calculate PE
+  radunAll$PE<-NA
+  for (j in 1:nrow(radunAll)){
+    # center in radians
+    radCent<-center
+    #radCent<-center*3.14/180
+    firstdiff<- abs(radCent-radunAll$degrees[j])
+    seconddiff<-abs(radCent +(360-radunAll$degrees[j]))
+    radunAll$PE[j]<-min((firstdiff), (seconddiff))
+  }
+  
+  ggplot(radunAll, aes(x = PE, fill = type))+
+    geom_histogram()+
+    theme_classic()
+  
+  # save
+  ggsave(paste0("plot_", certainty, "PE_distr.jpeg"))
+  
+  # attach to the previous file
+  Alldata<-rbind(Alldata, radunAll)
+  
+}
+  
+  # print the file
+  write.csv(Alldata, "PE_continuous/stimuli_position.csv", row.names = F )
+  

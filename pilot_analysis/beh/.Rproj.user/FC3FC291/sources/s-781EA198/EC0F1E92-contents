@@ -1,0 +1,445 @@
+---
+title: "Analysis_pilot"
+author: "Francesco Pupillo"
+date: '2022-11-28'
+output: html_document
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+library(CircStats)
+```
+
+# read the file
+```{r}
+if(Sys.info()["sysname"]=="Linux"){
+  abs<-"/home/francesco/PowerFolders/PE_continuous_rolling/pilot_data/"
+  output<-"/home/francesco/PowerFolders/PE_continuous_rolling/pilot_analysis/"
+  
+} else{
+  abs<-"/Users/francescopupillo/PowerFolders/PE_continuous_rolling/pilot_data/"
+    output<-"/Users/francescopupillo/PowerFolders/PE_continuous_rolling/pilot_analysis/"
+
+}
+```
+
+```{r}
+# check out many subs
+subs<-list.files(abs, pattern="sub")
+
+# delete the sub_000
+subs<-subs[subs!="sub_000" & subs!="sub_194" ]
+
+
+data_all<-vector()
+data_all_encoding<-vector()
+for(sub in subs){
+  
+  dominant_eye<-"right"
+  
+  file_location<-(paste0(abs, sub, "/beh/"))
+  
+  et_location<-(paste0(abs, sub, "/et/"))
+  
+  data_recog<-read.csv(paste0(file_location, 
+                              list.files(file_location, pattern = "recognition")))
+  
+  data_encoding<-read.csv(paste0(file_location, 
+                              list.files(file_location, pattern = "test")))
+  
+  # get only the trials
+  data_encoding<-data_encoding[!is.na(data_encoding$radians),]
+  
+  sub_n<-as.numeric(substr(sub, 5,7))
+  
+  data_et<-read.csv(paste0(et_location, "sub-",  sub_n, "_eye-", dominant_eye, 
+                           "_last-fixation_et.csv"))
+  
+  # attach to the encoding dataset
+  data_encoding_et<-cbind(data_encoding, data_et)
+  
+  # get the angle given x and y coordinates
+  # the x coordinate is the adjacent while the y is the opposite
+  # tan(angle) = opposite (y) / adjacent (x) 
+  # angle = tan-1(opposite/adjacent)
+
+  # get the angle (in radians) and convert it into degrees
+  # however, the opposite is given in + and -
+  
+  new_y<-ifelse(data_encoding_et$y<=540, (540-data_encoding_et$y), -(data_encoding_et$y-540 ))
+  new_x<-ifelse(data_encoding_et$x<=960, -(960-data_encoding_et$x), (data_encoding_et$x-960))
+
+  # get the quadrant
+  quadrant<-NA
+  tanx<-NA
+  x_rad<-NA
+  x_deg<-NA
+  for (n in 1:length(new_y)){
+    if (!is.na(new_y[n])){
+  if (new_x[n]>0 & new_y[n]>0){
+    quadrant[n]<-1
+    tanx[n]<-(new_y[n])/(new_x[n])
+    x_rad[n]<-atan(tanx[n])
+    x_deg[n]<-x_rad[n]*180/pi
+  }else if(new_y[n]>0 & new_x[n]<0){
+    quadrant[n]<-2
+    tanx[n]<-(new_y[n])/(new_x[n])
+    x_rad[n]<-atan(tanx[n])
+    x_deg[n]<-(x_rad[n]*180/pi)+180
+  } else if(new_y[n]<0 & new_x[n]<0){
+  quadrant[n]<-3
+  tanx[n]<-(new_y[n])/(new_x[n])
+  x_rad[n]<-atan(tanx[n])
+  x_deg[n]<-(x_rad[n]*180/pi)+180
+  } else{
+  quadrant[n]<-4
+  tanx[n]<-(new_y[n])/(new_x[n])
+  x_rad[n]<-atan(tanx[n])
+  x_deg[n]<-(x_rad[n]*180/pi)+360
+  }
+    }
+  }
+  
+  data_encoding_et$fixations<-x_deg
+  
+  # calculate distance
+  data_encoding_et$fixation_error<-NA
+for (j in 1:nrow(data_encoding_et)){
+  # location center in degrees
+  presented<-as.numeric(data_encoding_et$degrees[j])
+  # fixation
+  fixation<-data_encoding_et$fixations[j]
+  #radCent<-center*3.14/180
+  firstdiff<- abs(presented-fixation)
+  
+  max_deg<-max(presented,fixation)
+  min_deg<-min(presented, fixation)
+  
+  seconddiff<-abs(min_deg +(360-max_deg))
+  data_encoding_et$fixation_error[j]<-min((firstdiff), (seconddiff))
+}
+  
+  
+  
+  # remove the duplicates in the recognition file
+  images<-as.character(unique(data_recog$stimulus))
+  
+  # remove empty values
+  images<-images[nchar(images)>1]
+  
+  # create two datasets, one for recognition (first occurrence), one for location
+  # (second occurrence)
+  recog<-list()
+  #locat<-list()
+  for (im in 1:length(images)){
+    # subset the image
+    curr_im<-data_recog[data_recog$stimulus==images[im],]
+    
+    max<-nrow(curr_im)
+    
+    recog[[im]]<-curr_im[1,]
+    # locat[[im]]<-curr_im[max,]
+    
+    
+  }
+  
+  data_rec<-do.call(rbind, recog)
+  #data_loc<-do.call(rbind, locat)
+
+  
+  # create accuracy
+ 
+  
+  if (sub_n%%2==0){
+    old_response<-"left"
+  }else{
+    old_response<-"right"
+  }
+  
+  data_rec$recog_acc<-ifelse(data_rec$old_new=="old" &
+                               data_rec$recog_resp.keys==old_response, 1, 0)
+  
+  # save it
+  write.csv(data_rec, paste0(output,"beh/", sub, "_recognition_cleaned.csv"))
+  
+  data_all<-rbind(data_all, data_rec)
+  data_all_encoding<-rbind(data_all_encoding, data_encoding_et)
+  
+}
+
+```
+
+Fixation error
+```{r}
+
+# prediction error at encoding and probability of remembering
+#data_old$PE<-as.numeric(data_old$PE)
+
+# prediction error at encoding and probability of remembering
+ggplot(data_all_encoding %>%
+         group_by(participant, type)%>%
+         summarise(fixation_error=mean(fixation_error, na.rm=T)), aes(x = type, y = fixation_error, fill = type ))+
+  geom_bar(aes(type, fixation_error, fill = type),
+           position="dodge",stat="summary", fun.y="mean", SE=T)+
+      stat_summary(fun.data = "mean_cl_boot", size = 0.8, geom="errorbar", width=0.2 )+
+  theme(axis.text.x = element_blank())+ # we are showing the different levels through the colors, so we can avoid naming the bars
+  #geom_errorbar(aes(y = location_err_rad,x = type, ymin = location_err_rad - se, 
+                   # ymax = location_err_rad + se),
+               # color = "black", width = 0.10, data=dat_summary)+
+   geom_line( aes(type, fixation_error,group = participant), size=1, alpha=0.2, stat="summary")+
+  theme_classic()
+
+
+  # plot
+  data_fixation<-data_encoding_et %>%
+    group_by(type, block) %>%
+    summarise(fixation_diff = mean(fixation_error, na.rm = T),
+              fixations = mean(fixations, na.rm=T),
+              fixations_sd = sd(fixations, na.rm=T), 
+              pos_1 = mean(pos_1),
+              pos_2, mean(pos_2),
+              degrees = mean(degrees))
+```
+
+Recognition
+```{r}
+
+# create recognition accuracy
+hit_rate<-data_all %>%
+  filter(old_new=="old")%>%
+  group_by(participant) %>%
+  summarize(hit_rate=mean(recog_acc))
+
+hit_rate
+
+# hit rate by group
+hit_rate_type<-data_all %>%
+  filter(old_new=="old")%>%
+  group_by(participant, type)%>%
+  summarize(hit_rate=mean(recog_acc))
+
+
+hit_rate_type
+
+# plot
+data_old<-data_all %>%
+  filter(old_new=="old")
+
+ggplot(data_old,
+       aes(type, recog_acc))+
+  geom_point(aes(group = participant, color = type),
+             cex = 3.25,
+             
+             position = position_dodge(0.1),
+             show.legend = FALSE,
+             stat="summary")+
+  #geom_boxplot(alpha = 0)+
+  
+  geom_line(data = data_old, aes(type, recog_acc,group = participant),
+            size=1, alpha=0.2, stat="summary")+
+  theme_classic() +
+  #scale_color_manual( values = c("afterCP" = "darkgoldenrod1", "beforeCP" = "darkred")) +
+  theme(axis.text.x = element_blank())+ # we are showing the different levels through the colors, so we can avoid naming the bars
+  theme(axis.ticks.x = element_blank())+
+  
+  theme(strip.text.x = element_text(size = 13))+
+  ylab("hit rate")+
+  #scale_fill_manual("legend", values = c("afterCP" = "darkgoldenrod1", "beforeCP" = "darkred"))+
+  theme(axis.text.x = element_text( size = 20))+
+  
+  theme(axis.title=element_text(size=14,face="bold"))+
+  theme(legend.position = "none")
+
+
+
+
+  #ylim(0, 180)
+
+
+
+```
+Location
+```{r}
+# calculate angular difference between location at encoding and participant's
+# response
+
+# now calculate PE
+data_old$location_error<-NA
+for (j in 1:nrow(data_rec)){
+  # location presented in degrees
+  presented<-as.numeric(data_old$degrees[j])
+  # response
+  response<-data_old$response[j]
+  #radCent<-center*3.14/180
+  firstdiff<- abs(presented-response)
+  
+  max_deg<-max(presented,response)
+  min_deg<-min(presented, response)
+  
+  seconddiff<-abs(min_deg +(360-max_deg))
+  data_old$location_error[j]<-min((firstdiff), (seconddiff))
+}
+```
+
+Check if it is random
+```{r include=FALSE}
+# create null distribution
+rand_all<-NA
+for ( n in 1:500){
+  
+  # get the number of the files
+   df<-data_old[data_old$participant==unique(data_old$participant)[1],]
+   
+  num_df<-nrow(df)
+  
+  # generate random response from 1 to 180 degrees
+  rand<-runif(num_df, min = 1, max = 359)
+  
+  df$rand<-rand
+  # generate the location error
+  df$location_error<-NA
+  for (j in 1:nrow(df)){
+    # location presented in degrees
+    presented<-as.numeric(df$degrees[j])
+    # response
+    response<-df$rand[j]
+    #radCent<-center*3.14/180
+    firstdiff<- abs(presented-response)
+    
+    max_deg<-max(presented,response)
+    min_deg<-min(presented, response)
+    
+    seconddiff<-abs(min_deg +(360-max_deg))
+    df$location_error[j]<-min((firstdiff), (seconddiff))
+  }
+  
+  rand_all<-rbind(rand_all, df)
+  
+}
+
+
+
+hist(rand_all$location_error)
+
+library(circular)
+
+# convert location error in radians
+rand_all$location_err_rad<-rand_all$location_error* 3.14/180
+
+hist(rand_all$location_err_rad)
+
+rand_all$null_emp<-"null"
+
+rand_all<-rand_all[!is.na(rand_all$location_err_rad),]
+
+# get the mean
+mean_circ<-circ.mean(rand_all$location_err_rad)
+
+kappa<-est.kappa(rand_all$location_err_rad)
+
+thres<-qvonmises(0.05, mean_circ, kappa, from=0)
+
+# in the empirical, 
+data_old$location_err_rad<-data_old$location_error* 3.14/180
+
+data_old$null_emp<-"empirical"
+select_names<-names(data_old)
+
+rand_all<-rand_all[, select_names]
+
+# merge
+data_null_emp<-rbind(rand_all, data_old)
+
+
+```
+
+# plot
+```{r}
+  # plot
+  # ggplot(data_null_emp, aes(x = location_err_rad, fill = null_emp))+
+  #   geom_histogram(binwidth = 5) +
+  #   coord_polar() +
+  #   #coord_polar(start = -pi, direction = -1)+
+  #   
+  #   #scale_x_continuous(limits = c(0,2*pi),
+  #    #                  breaks = seq(0, pi, by = pi/4),
+  #     #                 minor_breaks = seq(0, 2*pi, by = 0.3)) +
+  #   theme_classic()
+
+PlotBind<-ggplot(data_null_emp, aes(x= location_err_rad, fill=null_emp))
+
+PlotBind+
+  #geom_histogram(aes(y = ..density..),
+     #            colour = c(1,2), fill = "white") +
+  geom_density(alpha = .5)+
+  theme_classic()+
+  #geom_boxplot()+
+    facet_wrap(.~participant)+
+
+  geom_vline(xintercept = thres)+
+  theme(
+    plot.title = element_text(size = 22),
+    axis.title.x = element_text(size = 20),
+    axis.title.y = element_text(size = 20),
+    axis.text=element_text(size=20)
+  )+
+  xlab("location error in radians")+
+  #theme(legend.position = "none")+
+  ggtitle("Null vs empirical")+
+  theme(plot.title = element_text(hjust = 0.5))
+  #scale_fill_viridis(discrete=TRUE, option = "magma") 
+
+# kolmogorov-smirnov Test
+
+
+#ks.test(data_null_emp$location_err_rad[data_null_emp$null_emp=="empirical"], 
+#        data_null_emp$location_err_rad[data_null_emp$null_emp=="null"], altenative = "less")
+
+library(cramer)
+#cramer.test(data_null_emp$location_err_rad[data_null_emp$null_emp=="empirical"], 
+#        data_null_emp$location_err_rad[data_null_emp$null_emp=="null"], replicates=100)
+```
+
+
+
+
+```{r}
+# create within-part error bars
+library(Rmisc)
+dat_summary<- summarySEwithin(data_old,
+                              measurevar = "location_err_rad",
+                              withinvars = c("type"), 
+                              idvar = "participant")
+
+
+ggplot(data_old, aes(x = location_err_rad, fill = type ))+
+  geom_bar(aes(type, location_err_rad, fill = type),
+           position="dodge",stat="summary", fun.y="mean", SE=T)+
+  geom_errorbar(aes(y = location_err_rad,x = type, ymin = location_err_rad - se, 
+                    ymax = location_err_rad + se),
+                color = "black", width = 0.10, data=dat_summary)+
+  theme_classic()
+  #ylim(0, 180)
+
+data_old$PE<-as.numeric(data_old$PE)
+# location error
+ggplot(data_old, aes(PE, location_err_rad))+
+  geom_line(stat="smooth",method="lm",  formula=y~x,method.args=list(family="binomial"), alpha=0.5)+
+
+  aes(colour = factor(participant),   alpha=0.3)+
+  geom_smooth(method="lm",formula=y~x,method.args=list(family="binomial"), colour="black", se=T)+
+  #facet_grid(.~accuracy)+
+  theme(strip.text.x = element_text(size = 13))+
+  theme_classic()+
+      theme(legend.position = "none")+
+  xlab("PE (in degrees)")
+
+```
+
+
+
+
+
