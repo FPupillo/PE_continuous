@@ -32,7 +32,7 @@ Analysis of the pilot data:
 ### et: Eyetracking
 1 - preproc_et.m
 Import eyetracking data into Matlab. It loops through participants' data and converts the files. 
-2 - target_fixations
+2 - target_fixations   
 extract the fixations from the eyetracking data. On line 66 and 69 we can check the window of interest. 
 At the moment it is set between 2000 and 2500. We need to set it from 1500 to 2500. 
 
