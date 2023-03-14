@@ -5,7 +5,6 @@ To reproduce the analysis, the following softwares are needed:
 
 Additional tools can be found at the [eyelink support pages](https://www.sr-research.com/support/thread-7769.html), where they can be downlaoded after registration. 
 
-To analyze eyetracking data, it is worth to 
 ## Background and hypotheses
 This paradigm aims at exploring the relationship between prediction error and memory formation. Participants watch a truck that delivers some goods across the city. On every trial, the truck appears on a different locations, and in the end the delivered item appears. The third truck and the image both appear most of the time at roughly the same place, so that participants will learn over time to predict where the item will be delivered. However, some time the third position will differ to some extent, creating prediction errors of varying degrees: low, high, and medium prediction error. Thus, we manipulate the distance of the actual position of the target object from the most likely position.
 
@@ -36,6 +35,7 @@ The number of objects by condition is shown in [this table](https://docs.google.
 
 286 trial-unique stimuli were selected from the O-MIND dataset ([https://github.com/DuncanLab/OMINDS](https://github.com/DuncanLab/OMINDS)), half of them can be typically be found indoor, half outdoor. We matched memorability, nameability, and  emotionality among categories (indoor/ outdoor) and encoding/recognition sets. To select the object, we set tmemorability to 100, nameability to 100, and emotionality to 0. 6 objects were the fillers.
 
+
 ### Randomization
 The sequence location is randomize for each participant, with the only constraint that the difference between the center of the location of the low PE trials in the firsta session and in the second session should differe of 90 degrees (rotation of 90 deg clockwise or conuterclockwise)
 
@@ -50,10 +50,27 @@ Try out the task at the following links.
 
 [https://pavlovia.org/lisco/precont_recognition](https://pavlovia.org/lisco/precont_recognition)
 
-### pilot data
+## helper_functions
+Functions used to compute several variables
+
+### get_fixations.R
+Function to get the the distance of the fixation from the most likely location and from where the object is presented. 
+
+## pilot data
 Pilot data subdivided in behavioural (beh) and eyetracking (et)
 
-### pilot analysis 
+## pilot analysis 
 Analysis of the pilot data:
-- beh: Behvioural
-- et: Eyetracking
+### beh: Behvioural
+
+### et: Eyetracking
+1 - preproc_et.m
+Import eyetracking data into Matlab. It loops through participants' data and converts the files. 
+2 - target_fixations
+extract the fixations from the eyetracking data. On line 66 and 69 we can check the window of interest. 
+At the moment it is set between 2000 and 2500. We need to set it from 1500 to 2500. 
+
+### Eyetracking data
+The script-generated eye-tracking data can be find in the subject-specific subfolder created in the folder 'et'. 
+- The script 'preproc_et.m' creates the file `sub-*_by-trial_et.mat`.
+- The script 'target_fixation' creates 2 .csv files, on for each eye: `sub-*_eye-left_last-fixation_et.csv` and `sub-*_eye-right_last-fixation_et.csv`.
