@@ -9,6 +9,7 @@ output:
     toc: true
     toc_depth: 6
 ---
+
 Scripts that analyze eye tracking data and count the missing cases
 
 ```{r setup, include=FALSE}
@@ -18,14 +19,14 @@ library(ggplot2)
 library(Rmisc)
 library(dplyr)
 source("helper_functions/get_fixations.R")
-knitr::opts_chunk$set(include = FALSE, warning = FALSE)
+knitr::opts_chunk$set(include = T, warning = FALSE)
 
 # what is the time window of the fixations?
 time_window<-"2000_2500"
 ```
 
 First, get the data
-```{r include=FALSE}
+```{r warning=FALSE, include=FALSE}
 cd<-getwd()
 setwd("pilot_data")
 # get the participants
@@ -76,7 +77,7 @@ write.csv(all_file, paste0("output_data/ET_data_",time_window,".csv"))
 
 Plot the results by prediction error
 
-```{r}
+```{r echo=FALSE, warning=FALSE}
 # first, summarise with within-participant error bars
 dat_summary_fix_error<- summarySEwithin(all_file,
                                        measurevar = "fixation_error",
@@ -114,7 +115,7 @@ ggplot(all_file %>%
 ggsave(paste0("output_data/ET_data_",time_window,".jpeg"))
 ```
 Now the number of NAs by participant
-```{r}
+```{r echo=FALSE, warning=FALSE}
 countNa<-all_file %>%
   group_by(participant) %>%
   dplyr::summarise(CountCase = n(), PercNA = sum(is.na(fixations))/n()*100)
