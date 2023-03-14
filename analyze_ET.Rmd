@@ -76,7 +76,7 @@ write.csv(all_file, paste0("output_data/ET_data_",time_window,".csv"))
 
 Plot the results by prediction error
 
-```{r echo=FALSE}
+```{r}
 # first, summarise with within-participant error bars
 dat_summary_fix_error<- summarySEwithin(all_file,
                                        measurevar = "fixation_error",
@@ -114,7 +114,7 @@ ggplot(all_file %>%
 ggsave(paste0("output_data/ET_data_",time_window,".jpeg"))
 ```
 Now the number of NAs by participant
-```{r echo=FALSE}
+```{r}
 countNa<-all_file %>%
   group_by(participant) %>%
   dplyr::summarise(CountCase = n(), PercNA = sum(is.na(fixations))/n()*100)
