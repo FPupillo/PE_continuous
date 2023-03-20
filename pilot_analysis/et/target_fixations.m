@@ -6,21 +6,36 @@
 clear; close all
 %% Import data
 % Data folder
-if strcmpi(getenv('USER'), 'javierortiz')
-    main_folder = '/Users/javierortiz/PowerFolders/PE_continuous_rolling (Francesco Pupillo)/pilot_data/';
-elseif strcmpi(getenv('USER'), 'francesco')
-    main_folder = '/home/francesco/PowerFolders/PE_continuous_rolling/pilot_data/';
-else 
-    main_folder = '/Users/francescopupillo/PowerFolders/PE_continuous_rolling/pilot_data/';
-    fun_folder = '/Users/francescopupillo/PowerFolders/PE_continuous_rolling/pilot_analysis/'
+if strcmpi(getenv('USER'), 'francescopupillo')
+    main_folder = '/Users/francescopupillo/PowerFolders/Frankfurt_University/EXPRA/Experiments/Analysis/PEmem/';
+    fun_folder = '/Users/francescopupillo/PowerFolders/Frankfurt_University/EXPRA/Experiments/Analysis/PEmem/et';
+
+else
+    main_folder = '/home/francesco/PowerFolders/Frankfurt_University/EXPRA/Experiments/Analysis/PEmem/';
+    fun_folder = '/home/francesco/PowerFolders/Frankfurt_University/EXPRA/Experiments/Analysis/PEmem/et';
 end
 
 % Folder with external tools
 ext_func_folder = sprintf('%s/external_tools', main_folder);
 
 % Which sub?
-which_sub = 194;
+sub_folders = dir([main_folder, 'clean_data']);
 
+% create an empty variable for the names of the folders
+which_subs = {};
+counter = 1;
+for i = 1:length(sub_folders)
+    filename = sub_folders(i).name;
+    if ~ strcmp(sub_folders(i).name, '.') &&  ~ strcmp(sub_folders(i).name, '..')% check if it is an empty file
+        which_subs{counter} = filename;
+        counter = counter+1;
+    end
+end
+
+%subs = cat(1, which_subs{:});
+
+for n = 1:length(which_subs)
+    
 % Build some names
 mat_file = sprintf('%s/sub_%d/et/sub-%d_by-trial_et.mat', main_folder, which_sub, which_sub);
 
@@ -30,10 +45,10 @@ trial_data = t.data_by_trial;
 
 %% Get fixations during window of interest (WOI)
 % Second truck offset
-woi_onset = 3000;
+woi_onset = 2500;
 
 % Third truck onset
-woi_offset = 3500;
+woi_offset = 3000;
 
 % Loop through trials
 for c_trial = 1:length(trial_data)
