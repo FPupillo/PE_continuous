@@ -7,8 +7,8 @@ clear; close all
 %% Import data
 % Data folder
 if strcmpi(getenv('USER'), 'francescopupillo')
-    main_folder = '/Users/francescopupillo/PowerFolders/Frankfurt_University/EXPRA/Experiments/Analysis/PEmem/';
-    fun_folder = '/Users/francescopupillo/PowerFolders/Frankfurt_University/EXPRA/Experiments/Analysis/PEmem/et';
+    main_folder = '/Users/francescopupillo/PowerFolders/PE_continuous_rolling/github/pilot_data';
+    fun_folder = '/Users/francescopupillo/PowerFolders/PE_continuous_rolling/github/et';
 
 else
     main_folder = '/home/francesco/PowerFolders/Frankfurt_University/EXPRA/Experiments/Analysis/PEmem/';
@@ -19,25 +19,41 @@ end
 ext_func_folder = sprintf('%s/external_tools', main_folder);
 
 % Which sub?
-sub_folders = dir([main_folder, 'clean_data']);
+sub_folders = dir([main_folder]);
 
-% create an empty variable for the names of the folders
-which_subs = {};
-counter = 1;
-for i = 1:length(sub_folders)
-    filename = sub_folders(i).name;
-    if ~ strcmp(sub_folders(i).name, '.') &&  ~ strcmp(sub_folders(i).name, '..')% check if it is an empty file
-        which_subs{counter} = filename;
-        counter = counter+1;
+    % create an empty variable for the names of the folders
+    which_subs = {};
+    % loop through participants to get the participants for whom we have data
+    counter = 1;
+    for i = 1:length(sub_folders)
+        filename = sub_folders(i).name;
+        if ~ strcmp(sub_folders(i).name, '.') &&  ~ strcmp(sub_folders(i).name, '..') &&  ~ strcmp(sub_folders(i).name, '.DS_Store')% check if it is an empty file
+            which_subs{counter} = filename;
+            counter = counter+1;
+        end
     end
-end
 
 %subs = cat(1, which_subs{:});
 
 for n = 1:length(which_subs)
     
+        % select the current subs
+        curr_sub = which_subs{n};
+
+        % check if there is the .edf file
+        sub_folder = [main_folder, '/', curr_sub];
+        cd(sub_folder);
+
+       if ~ isempty(dir('et'))
+
+            if length(curr_sub)==7
+                sub_num = string(curr_sub(5:7));
+            else
+                sub_num = string(curr_sub(5:6));
+            end
+            
 % Build some names
-mat_file = sprintf('%s/sub_%d/et/sub-%d_by-trial_et.mat', main_folder, which_sub, which_sub);
+mat_file = sprintf('%s/sub-%s/et/sub-%s_by-trial_et.mat', main_folder, sub_num, sub_num);
 
 % Load preprocessed data in .mat format
 t = load(mat_file);
@@ -111,12 +127,14 @@ end
 out = table(sort(repmat([1;2],100,1)), left_woi(:,1), left_woi(:,2), left_woi(:,3), 'VariableNames',...
     {'block';'trial_n'; 'x'; 'y'});
     % Print
-out_name = sprintf('%s/sub_%d/et/sub-%d_eye-left_last-fixation_et.csv', main_folder, which_sub, which_sub);
+out_name = sprintf('%s/sub-%s/et/sub-%s_eye-left_last-fixation_et.csv', main_folder, sub_num, sub_num);
 writetable(out, out_name)
 
 out = table(sort(repmat([1;2],100,1)), right_woi(:,1), right_woi(:,2), right_woi(:,3), 'VariableNames',...
     {'block';'trial_n'; 'x'; 'y'});
     % Print
-out_name = sprintf('%s/sub_%d/et/sub-%d_eye-right_last-fixation_et.csv', main_folder, which_sub, which_sub);
+out_name = sprintf('%s/sub-%s/et/sub-%s_eye-right_last-fixation_et.csv', main_folder, sub_num, sub_num);
 writetable(out, out_name)
+       end
 
+end
