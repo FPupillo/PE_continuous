@@ -75,6 +75,7 @@ get_fixations<-function(data_encoding, data_et){
   #   # calculate distance
   data_encoding_et$fixation_error<-NA
   data_encoding_et$fixation_prediction<-NA
+  data_encoding_et$fix_diff_second_truck<-NA
   for (j in 1:nrow(data_encoding_et)){
     
     # presented position of the third truck in degrees
@@ -109,6 +110,20 @@ get_fixations<-function(data_encoding, data_et){
     # fixation strength
     #data_encoding_et$fixation_prediction[j]<-180-  data_encoding_et$fixation_error[j]
     data_encoding_et$fixation_prediction[j]<-min(firstdiff2, seconddiff2)
+    
+    # do it for second truck
+    firstdiff3<-max(pos_2, fixation)
+    
+    max_deg3<-max(pos_2,fixation)
+    min_deg3<-min(pos_2, fixation)
+    
+    firstdiff3<-max(pos_2, fixation)
+    
+    seconddiff3<-abs(min_deg3 +(360-max_deg3))
+    
+    data_encoding_et$fix_diff_second_truck[j]<-min(firstdiff3, seconddiff3)
+    
+    
   }
 
   return(data_encoding_et)
