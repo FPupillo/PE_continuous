@@ -35,6 +35,7 @@ participants<-list.files()
 # create an empty file to store all the participants' data
 all_file<-vector()
 
+getwd()
 # loop through participants and get the data
 for (sub in participants){
 
@@ -79,8 +80,9 @@ Aggregated into wide
 ```{r}
 # get data 2000_2500
 data_20_25<-read.csv("output_data/ET_data_2000_2500.csv")
-data_20_25<-data_20_25[, names(all_file)]
+data_20_25<-data_20_25[, names(all_file)[1:28]]
 
+all_file<-all_file[,1:28]
 data_20_25$time_window<-"2000_2500"
 all_file$time_window<-"1500_2500"
 
@@ -125,6 +127,49 @@ names(agg_wide_20_agg)[3:4]<-c("count_NA_2000_2500", "fixation_prediction_2000_2
 # merge the two
 agg_wide_all_agg<-merge(agg_wide_20_agg[, c(1, 3,4)], agg_wide_15_agg[, c(1,3,4)], by = 'participant')
 
+# breakdown fixation prediction by PE trial
+agg_wide_all_agg$fixation_prediction_1500_2500_PElow<-unlist(all_tw %>%
+                                                filter(time_window == "1500_2500" & type == "low") %>%
+                                                group_by(participant ) %>%
+                                                summarize(fixation_prediction =
+                                                mean(fixation_prediction, na.rm=T))%>%
+                                                select(fixation_prediction))
+
+agg_wide_all_agg$fixation_prediction_1500_2500_PEmedium<-unlist(all_tw %>%
+                                                filter(time_window == "1500_2500" & type == "medium") %>%
+                                                group_by(participant ) %>%
+                                                summarize(fixation_prediction =
+                                                mean(fixation_prediction, na.rm=T))%>%
+                                                select(fixation_prediction))
+
+agg_wide_all_agg$fixation_prediction_1500_2500_PEhigh<-unlist(all_tw %>%
+                                                filter(time_window == "1500_2500" & type == "high") %>%
+                                                group_by(participant ) %>%
+                                                summarize(fixation_prediction =
+                                                mean(fixation_prediction, na.rm=T))%>%
+                                                select(fixation_prediction))
+# now 2000 - 2500
+agg_wide_all_agg$fixation_prediction_2000_2500_PElow<-unlist(all_tw %>%
+                                                filter(time_window == "2000_2500" & type == "low") %>%
+                                                group_by(participant ) %>%
+                                                summarize(fixation_prediction =
+                                                mean(fixation_prediction, na.rm=T))%>%
+                                                select(fixation_prediction))
+
+agg_wide_all_agg$fixation_prediction_2000_2500_PEmedium<-unlist(all_tw %>%
+                                                filter(time_window == "2000_2500" & type == "medium") %>%
+                                                group_by(participant ) %>%
+                                                summarize(fixation_prediction =
+                                                mean(fixation_prediction, na.rm=T))%>%
+                                                select(fixation_prediction))
+
+agg_wide_all_agg$fixation_prediction_2000_2500_PEhigh<-unlist(all_tw %>%
+                                                filter(time_window == "2000_2500" & type == "high") %>%
+                                                group_by(participant ) %>%
+                                                summarize(fixation_prediction =
+                                                mean(fixation_prediction, na.rm=T)) %>%
+                                                select(fixation_prediction))
+
 # print
 write.csv(agg_wide_all_agg, "output_data/data_aggr_wide.csv")
 
@@ -141,25 +186,35 @@ ggplot(all_tw %>%
   geom_point(alpha = 0.10, colour = "black" )+
   # add a line that connect those points by participant
   # add a summary line (mean)
-  xlab("")
+  xlab("")+
   
   theme_classic()
 #  # delete the x axis text and ticks, as we have the legend
 
   
   ggplot(all_tw %>%
-         group_by(participant,time_window)%>%
+         group_by(participant,time_window, type)%>%
          dplyr::summarise(fixation_prediction=mean(fixation_prediction, na.rm=T)), 
        aes(x = time_window, y = fixation_prediction, colour = time_window ))+
     geom_bar(aes(time_window, fixation_prediction, fill = time_window),
            position="dodge",stat="summary")+
+    #facet_wrap(.~type)+
   # Add some points, which correspond to the participants
   geom_point(alpha = 0.10, colour = "black" )+
   stat_summary(fun.data = "mean_cl_boot", size = 0.8, geom="errorbar", width=0.2 )+ # this line adds error bars
 
   # add a line that connect those points by participant
   # add a summary line (mean)
-  xlab("")
+  xlab("")+
   
   theme_classic()
+  
+  # is that significant?
+  library(lme4)
+  library(lmerTest)
+  mod<-lmer(fixation_prediction~time_window + (1| participant), data=all_tw)
+   
+  summary(mod) 
+  
+  
 ```

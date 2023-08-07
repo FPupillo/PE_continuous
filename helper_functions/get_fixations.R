@@ -112,6 +112,8 @@ get_fixations<-function(data_encoding, data_et){
     data_encoding_et$fixation_prediction[j]<-min(firstdiff2, seconddiff2)
     
     # do it for second truck
+    pos_2<-data_encoding_et$pos_2[j]
+    
     firstdiff3<-max(pos_2, fixation)
     
     max_deg3<-max(pos_2,fixation)
